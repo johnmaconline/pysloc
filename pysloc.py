@@ -223,6 +223,24 @@ def format_path_for_display(path, root_root):
         return path
 
 
+def log_sloc_summary(root_abs, total, per_file_counts=None):
+    '''
+    Pretty-print the SLOC summary to the logger.
+    '''
+    log.info('=' * 70)
+    if per_file_counts is not None:
+        log.info(f'SLOC summary for {root_abs}')
+        log.info('-' * 70)
+        for path in sorted(per_file_counts):
+            display_path = format_path_for_display(path, root_abs)
+            log.info(f'{per_file_counts[path]:8d} | {display_path}')
+        log.info('-' * 70)
+        log.info(f'TOTAL SLOC: {total:,}')
+    else:
+        log.info(f'Total Python SLOC under {root_abs}: {total:,}')
+    log.info('=' * 70)
+
+
 # ****************************************************************************************
 # Argument handling
 # ****************************************************************************************
@@ -331,23 +349,13 @@ def main():
             per_file=True,
             ignore_patterns=args.ignore,
             include_hidden=args.include_hidden)
-        log.info('=' * 70)
-        log.info(f'SLOC summary for {root_abs}')
-        log.info('-' * 70)
-        for path in sorted(per_file_counts):
-            display_path = format_path_for_display(path, root_abs)
-            log.info(f'{per_file_counts[path]:8d} | {display_path}')
-        log.info('-' * 70)
-        log.info(f'TOTAL SLOC: {total:,}')
-        log.info('=' * 70)
+        log_sloc_summary(root_abs, total, per_file_counts=per_file_counts)
     else:
         total = count_loc(args.path,
                           per_file=False,
                           ignore_patterns=args.ignore,
                           include_hidden=args.include_hidden)
-        log.info('=' * 70)
-        log.info(f'Total Python SLOC under {root_abs}: {total:,}')
-        log.info('=' * 70)
+        log_sloc_summary(root_abs, total, per_file_counts=None)
 
 
 if __name__ == '__main__':
