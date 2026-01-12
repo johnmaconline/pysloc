@@ -256,10 +256,10 @@ def handle_args():
         description='Count Python source lines of code (SLOC).')
 
     parser.add_argument(
-        'path',
-        nargs='?',
-        default='.',
-        help='Root directory to scan (default: current directory).')
+        'paths',
+        nargs='*',
+        default=['.'],
+        help='Root directories/files to scan (default: current directory). Supports multiple paths.')
 
     parser.add_argument(
         '-i',
@@ -341,21 +341,32 @@ def main():
     Entrypoint that wires together dependencies and launches the CLI loop.
     '''
     args = handle_args()
-    root_abs = os.path.abspath(args.path)
+    overall_total = 0
 
-    if args.per_file:
-        per_file_counts, total = count_loc(
-            args.path,
-            per_file=True,
-            ignore_patterns=args.ignore,
-            include_hidden=args.include_hidden)
-        log_sloc_summary(root_abs, total, per_file_counts=per_file_counts)
-    else:
-        total = count_loc(args.path,
-                          per_file=False,
-                          ignore_patterns=args.ignore,
-                          include_hidden=args.include_hidden)
-        log_sloc_summary(root_abs, total, per_file_counts=None)
+    for target in args.paths:
+        root_abs = os.path.abspath(target)
+
+        if args.per_file:
+            per_file_counts, total = count_loc(
+                target,
+                per_file=True,
+                ignore_patterns=args.ignore,
+                include_hidden=args.include_hidden)
+            log_sloc_summary(root_abs, total, per_file_counts=per_file_counts)
+        else:
+            total = count_loc(target,
+                              per_file=False,
+                              ignore_patterns=args.ignore,
+                              include_hidden=args.include_hidden)
+            log_sloc_summary(root_abs, total, per_file_counts=None)
+
+        overall_total += total
+
+    if len(args.paths) > 1:
+        log.info('=' * 70)
+        log.info(
+            f'Combined total across {len(args.paths)} paths: {overall_total:,}')
+        log.info('=' * 70)
 
 
 if __name__ == '__main__':

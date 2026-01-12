@@ -17,6 +17,9 @@ python3 pysloc.py .
 # Totals only
 python3 pysloc.py --total-only .
 
+# Multiple roots (globs expanded by the shell are supported)
+python3 pysloc.py ../proj_a ../proj_b/src
+
 # Ignore tests and virtualenv contents
 python3 pysloc.py ../my_project --ignore "../my_project/tests/*" "../my_project/.venv/*"
 
